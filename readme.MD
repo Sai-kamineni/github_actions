@@ -7,11 +7,10 @@ Continuous integration attacks that delay. The idea: every time anyone pushes co
 
 #### What a CI run looks like
 A typical CI run does three things:
-```
-Download the exact code that was just pushed.
-Install the project's dependencies from scratch, so the run does not depend on whatever is installed on someone's laptop.
+
+- Download the exact code that was just pushed.
+- Install the project's dependencies from scratch, so the run does not depend on whatever is - - installed on someone's laptop.
 Run the checks: tests, a linter, maybe a build.
-```
 
 If any step fails, the push is marked with a red cross, and the team knows within minutes. The person who pushed still remembers what they changed, so the fix is quick.
 
