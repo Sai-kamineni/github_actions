@@ -1355,4 +1355,25 @@ A commit SHA cannot move. It is the identity of one exact version of the code. P
 ```
 uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 ```
+The comment records which release the SHA belongs to, for humans. GitHub only reads the SHA. You can find the SHA of a release on the action's releases page on GitHub, or from this VM with git:
+```
+git ls-remote https://github.com/actions/checkout v4.1.1
+```
 
+#### Secrets hygiene, briefly again
+Pinning matters most where secrets are involved. The rules from the secrets topic still apply: never echo a secret, pass it through env: instead of writing it into a command line, and only hand a secret to a step that truly needs it. A pinned action plus a minimal token plus careful secrets is the whole defense, not any one of them alone.
+
+### Untrusted code and elevated access
+In this lesson you will learn about the most dangerous mistake in GitHub Actions: running code you do not control with access it should not have. No task follows this lesson - the goal is to recognize the pattern so you never build it.
+
+#### The pull_request_target trigger
+You know the pull_request trigger. When someone opens a pull request from a fork, it runs the workflow against the code in the PR, but with a weak token and no access to your secrets. That is on purpose: a stranger wrote that code.
+
+There is a second trigger with a similar name: pull_request_target. It also fires when a PR is opened, but it runs with a full-strength token and full access to your secrets. It is meant for jobs that only touch the PR from the outside, like adding a label.
+
+The danger appears when a workflow combines the two worlds: it uses pull_request_target for the strong token, and then checks out the code from the PR. Now the stranger's code runs in a job that holds your secrets. The attacker only has to add one step to a build script and open a PR, and your secrets are theirs.
+
+The rule is simple: never check out or execute pull request code inside a pull_request_target workflow. If you need to build and test PRs, the plain pull_request trigger already does that safely.
+
+#### The same pattern on self-hosted runners
+You met the second version of this pattern in the self-hosted runner topic, and it is worth repeating. A self-hosted runner attached to a public repository executes workflow code from anyone who opens a pull request, on a machine you own, inside your network. Same mistake, different door: untrusted code plus a trusted place to run it. Self-hosted runners belong on private repositories only.
