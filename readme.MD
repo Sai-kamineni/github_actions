@@ -164,3 +164,13 @@ on:
 ```
 
 The list form triggers on either event. The map form does the same, and leaves room for filters under each event - that is the next lesson.
+
+The list form triggers on either event. The map form does the same, and leaves room for filters under each event - that is the next lesson.
+
+#### When each event fires
+- push fires every time commits reach a branch on GitHub. Not when you commit locally, only when the push arrives at GitHub.
+- pull_request fires when a pull request is opened, and again on every new push to the branch of that pull request. A push to a same-repository pull-request branch can therefore emit both push and pull_request events.
+
+#### Why teams use both
+For pixelpost, push guards the main branch: every change that lands is tested. pull_request tests a change before it lands, so the reviewer sees a green tick next to the code they are reviewing. Most CI workflows you meet in real repositories listen to both.
+
