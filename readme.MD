@@ -1297,3 +1297,22 @@ Second, ./run.sh stays in the foreground and occupies your terminal. To keep the
 `nohup ./run.sh > /root/actions-runner/runner.log 2>&1 &`
 
 A note on resources: runner usage depends on every command and service in the job. Check the workflow's measured CPU, memory, disk, and concurrency needs before deciding whether this VM is large enough.
+
+### Self-hosted runner security
+In this lesson you will learn the one rule that keeps a self-hosted runner safe, and why this course uses a private repository for it.
+
+Think about what a runner really is. It takes code from a repository and executes that code on your machine. So the question that decides everything is simple: who can put code into that repository?
+
+#### Never attach a self-hosted runner to a public repository
+In a public repository, anyone on the internet can open a pull request. A pull request contains code. If a workflow runs that code on your self-hosted runner, then a complete stranger has just executed their code on your machine.
+
+What could their code do there? Anything your runner's user can do. Read files on the disk. Steal the credentials stored on the machine, like the token in /root/.github/token on this VM. Use the machine to attack other machines. Install a program that stays after the job ends, because unlike a GitHub-hosted runner, your machine is not destroyed when the job finishes.
+
+The attacker does not need their pull request to be merged. Being able to open one can be enough.
+
+So the rule is short: a self-hosted runner belongs on private repositories only, where only people you invited can push code or open pull requests. This is why the deploy repository in the next task is private. And private is not a downgrade here - self-hosted jobs cost zero minutes, so a private repository with a self-hosted runner runs for free.
+
+#### Two more habits that limit the damage
+Register at the repository level. GitHub also allows one runner to serve a whole organization. The runner you register in this topic serves exactly one repository, so only workflows from that one repository can ever reach this VM. The fewer repositories can send code to your machine, the fewer places a mistake can come from.
+
+Keep deploy jobs small. Give the self-hosted runner only the work that truly needs your machine, like copying a release file into place. Run tests and builds on GitHub-hosted runners, where the machine is destroyed after every job. Less code running on your machine means less code that can go wrong on it.
