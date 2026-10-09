@@ -112,3 +112,33 @@ Read it top to bottom:
 - jobs - a map of jobs. Each key under jobs is a job id you invent (test here). A normal job defines runs-on, the runner label, and steps, a list of steps. A job that calls a reusable workflow uses job-level uses instead.
 
 Steps are a YAML list: each step starts with a -. A step that runs a shell command uses the run key, and name gives the step a label in the logs.
+
+Many workflows build on this skeleton with more events, jobs, and steps. name is optional, and other top-level keys can add permissions, defaults, concurrency, environment variables, or a dynamic run name.
+
+### Checking workflows with actionlint
+In this lesson you will learn what actionlint is and how to run it on a workflow file.
+
+A broken workflow file fails in an annoying way: you push it, wait for GitHub to try it, and read an error message on the website. Fixing a typo can take several push-and-wait loops. Teams avoid that loop with a linter: a program that reads your file and reports mistakes before you push.
+
+For GitHub Actions, the standard linter is actionlint. It ships as a single binary. It knows the workflow format deeply, so it catches much more than broken YAML:
+
+- misspelled keys, like run-on instead of runs-on
+- runner labels that do not exist
+- a jobs section with no jobs in it
+- shell mistakes inside your run commands
+
+Run it by giving it the path to a workflow file. Create this small example first so the path exists:
+```
+mkdir -p /root/demo/.github/workflows
+cat > /root/demo/.github/workflows/ci.yml <<'EOF'
+name: demo CI
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show message
+        run: echo "CI is ready"
+EOF
+```
+`actionlint /root/demo/.github/workflows/ci.yml`
