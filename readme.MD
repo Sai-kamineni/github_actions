@@ -902,3 +902,42 @@ with:
 ```
 Shorter retention is a good habit for throwaway files like test reports. Storage on private repositories counts against a quota, and even on public ones a pile of stale artifacts is just noise.
 
+### Passing files between jobs
+In this lesson you will learn how one job hands a file to another job using download-artifact.
+
+You know from the job dependencies topic that jobs run on separate runners, and that needs: controls their order. Order is not enough, though. A build job and a test job may run in the right sequence, but the test job's runner starts empty. The package the build job created is on a machine that no longer exists.
+
+Artifacts solve this. The first job uploads the file, GitHub stores it, and the second job downloads it.
+
+#### Downloading with actions/download-artifact
+```
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build the package
+        run: echo "the package" > app.txt
+      - name: Upload the package
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-package
+          path: app.txt
+  verify:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the package
+        uses: actions/download-artifact@v4
+        with:
+          name: app-package
+      - name: Check it arrived
+        run: test -f app.txt
+```
+
+Three details to notice:
+- needs: build is required. Without it the two jobs run at the same time, and the download step would look for an artifact that does not exist yet.
+- The name in download-artifact must match the name used in upload-artifact, character for character.
+- The files land in the job's working directory by default. A path input can place them somewhere else.
+
+This upload-then-download pattern is how real pipelines split work: build once, then test, scan, or deploy the same files in later jobs.
+
