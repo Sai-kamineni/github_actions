@@ -1246,3 +1246,48 @@ That one difference decides everything else:
 
 A rule of thumb that holds up well: if the shared thing needs its own runner or several jobs, make it a reusable workflow. If it is a recipe of steps you want inside many jobs, make it a composite action. Teams commonly use both - a reusable workflow for the pipeline's shape, composite actions for the small recipes inside it.
 
+## 21.Runners and self hosted runners
+### GitHub-hosted runner types
+In this lesson you will learn what runner types GitHub offers and what runs-on: actually chooses.
+
+Every job in this course so far has said runs-on: ubuntu-latest and received a fresh virtual machine from GitHub. That machine is a GitHub-hosted runner: GitHub creates it for your job, destroys it afterwards, and you never see it.
+
+ubuntu-latest is one label from a small menu:
+
+- ubuntu-latest - Linux, the usual choice for CI. Also available pinned, like ubuntu-24.04.
+- windows-latest - Windows, for teams that ship Windows software.
+- macos-latest - macOS, mostly used to build and test apps for Apple platforms.
+
+Pinning matters more than it looks. The meaning of ubuntu-latest moves when GitHub promotes a new Ubuntu release, and pipelines can break on that day without any change in your repository. Teams that want stable builds write ubuntu-24.04 and upgrade on their own schedule.
+
+#### What a hosted runner gives you, and what it costs
+Hosted runners come with a large toolset preinstalled: git, Python, Node, compilers, and much more. Each job gets a clean machine, so no leftover state from earlier runs can leak in.
+
+The cost side: public repositories run free without limits. Private repositories get a monthly allowance of free minutes, and beyond it minutes are billed. Windows and macOS runners burn the allowance faster than Linux ones.
+
+#### What a hosted runner cannot do
+A hosted runner lives in GitHub's cloud. It has no inherent access to a private office network or your local machine, and it disappears when the job ends. Reaching private infrastructure requires an explicit network path and credentials. Teams often use a self-hosted runner for work that must run directly on a machine they control.
+
+### How a self-hosted runner works
+In this lesson you will learn how a machine of your own becomes a runner, step by step, because you will do it to this VM in the task after next.
+
+A self-hosted runner is a small program from GitHub that you run on your own machine. It connects out to GitHub, waits, and when a job in your repository says runs-on: self-hosted, GitHub hands that job to your machine. The runner executes the steps right there, with access to the machine's real disk.
+
+Your machine calls GitHub, not the other way around. It still needs permitted outbound HTTPS access to GitHub's required endpoints; restrictive egress rules or proxies can block it. Jobs on your own hardware do not consume GitHub-hosted minutes.
+
+#### The registration flow
+A runner is registered to one repository from that repository's settings page on github.com: Settings, then Actions, then Runners, then New self-hosted runner. Pick Linux x64. The page then shows the exact commands for your repository, and they follow this shape:
+```
+mkdir /root/actions-runner && cd /root/actions-runner
+curl -o actions-runner.tar.gz -L <download URL from the page>
+tar xzf actions-runner.tar.gz
+./config.sh --url https://github.com/OWNER/REPO --token <token from the page>
+./run.sh
+```
+
+Two flags do the work in config.sh: --url names the repository the runner belongs to, and --token is a short-lived registration token that the page generates for you. It is not your personal access token, and it expires after about an hour, so copy it fresh from the page when you register.
+
+#### Two adjustments for this VM
+First, you are logged in as root here, and the runner refuses to configure as root unless you allow it. Export this before running config.sh and run.sh:
+`export RUNNER_ALLOW_RUNASROOT=1`
+Second, ./run.sh stays in the foreground and occupies your terminal. To keep the runner alive in the background, start it with nohup:
