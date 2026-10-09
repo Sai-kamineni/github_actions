@@ -287,7 +287,7 @@ This keeps the run script about the work, not about navigation, and it only affe
 In this lesson you will learn what an action is and how the uses: line names one.
 
 The pixelpost team needs their workflow to download the code, install Python, and later upload a build result. None of that is special to pixelpost. Thousands of teams need the exact same steps, so people packaged them as reusable units called actions. A uses step pulls one in:
-``
+```
 - name: Get the code
   uses: actions/checkout@v4
 ```
