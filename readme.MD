@@ -226,3 +226,28 @@ This adds a "Run workflow" button on the workflow's page in GitHub. Nothing runs
 Note the trailing colon with nothing after it: the event takes settings later (like input fields), so it is written as a map key even when empty.
 
 A workflow can combine all of these. A nightly run plus a manual button is a very common pair, and you will build exactly that in this topic's last task.
+
+## 5.run steps and uses steps
+In this lesson you will learn the two kinds of steps a job can contain, and how a job executes them.
+
+Back to pixelpost. The team's release checklist has entries like "run the tests" and "download the code first". When you turn that checklist into a workflow, each entry becomes a step, and the steps live inside a job. There are exactly two kinds:
+
+- A run step executes a shell command you write yourself.
+- A uses step executes an action, a ready-made piece of work someone else packaged. You will meet actions properly in the next topic.
+```
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hello
+        run: echo "hello from pixelpost"
+      - name: Get the code
+        uses: actions/checkout@v4
+```
+Each step starts with a dash, because steps: is a list. The name: is optional but always worth writing: it is the label you will see in the logs when something fails.
+
+#### Steps run in order, top to bottom
+A job executes its steps one at a time, in the order they appear in the file. Step 2 does not start until step 1 finishes. If a step fails, the job stops and the remaining steps are skipped.
+
+Order matters because the steps share one machine. Whatever step 1 leaves on disk, step 2 can read. That is the whole reason a job exists: it is a group of steps that need each other's results on the same machine.
+
