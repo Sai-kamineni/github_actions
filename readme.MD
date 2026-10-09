@@ -1340,3 +1340,19 @@ permissions:
 ```
 
 At the top level of a workflow file, this applies to every job. Listing one permission sets unlisted configurable permissions to none; metadata: read remains available. This token can read repository contents but cannot write them. That habit is called least privilege: give each workflow the smallest access that still lets it work. A test workflow that can only read code cannot push commits, close issues, or delete releases, even if one of its steps is compromised.
+
+### Pinning actions by commit SHA
+In this lesson you will learn why a version tag on an action is not a guarantee, and how pinning by commit SHA fixes that.
+
+Every uses: line in your workflows runs someone else's code on your runner, next to your secrets. So far you referenced actions by tag:
+```
+uses: actions/checkout@v4
+```
+#### Tags can move
+A tag like v4 is just a label an author sticks on a commit. The author can move it to a different commit at any time, and your workflow will silently run the new code on its next run. For trusted publishers that is how you get bug fixes. For a small third-party action it means one compromised maintainer account can swap the code behind a tag that thousands of workflows already reference.
+
+A commit SHA cannot move. It is the identity of one exact version of the code. Pinning to it looks like this:
+```
+uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+```
+
