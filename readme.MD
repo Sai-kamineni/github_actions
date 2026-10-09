@@ -711,3 +711,42 @@ jobs:
 ```
 The chain has three links: the step writes to $GITHUB_OUTPUT, the job's outputs: map lifts the step output up, and the downstream job reads it through the needs context. The downstream job must list the producer in its own needs:, otherwise the needs context has nothing in it.
 
+### Fan-out and fan-in
+In this lesson you will learn the two shapes that most real pipelines are built from: fan-out and fan-in.
+
+A straight chain like build, then test, then deploy works, but it wastes time. If linting and unit tests do not depend on each other, why should the tests wait for the linter? Runners are separate machines. Let them work at the same time.
+
+#### Fan-out: one job unlocks many
+Fan-out means several jobs all need the same earlier job. The moment that job finishes, the whole group starts in parallel:
+
+In YAML this is just three jobs that each say needs: build.
+
+#### Fan-in: many jobs unlock one
+Fan-in is the mirror image. One job lists several jobs in its needs, and starts only when all of them have succeeded:
+
+Here package declares needs: [lint, unit-tests]. If either one fails, package is skipped, exactly like in the first lesson.
+
+#### Real pipelines combine both
+A common shape is a diamond: build fans out into parallel checks, and a release job fans them back in:
+Total time drops to the slowest path through the graph, not the sum of all jobs.
+
+
+## 14.Conditions
+### The if keyword
+In this lesson you will learn how to make a step or a whole job run only when a condition is true.
+
+Think about the pipeline you built in the last topic. It runs the deploy job on every push, including pushes to experiment branches. On a real team that would be a problem: you want tests everywhere, but deploys only from main. The if keyword is how you say that.
+
+#### if on a step
+An if on a step holds an expression, built from the contexts you met in topic 10. The step runs only when the expression is true:
+```
+steps:
+  - name: Deploy
+    if: github.ref == 'refs/heads/main'
+    run: echo "deploying"
+```
+On a push to any other branch, GitHub marks the step as skipped. It shows up grey in the log, costs nothing, and the job carries on with the next step.
+
+Inside if you can usually skip the ${{ }} wrapper - GitHub treats the whole line as an expression already. An expression beginning with ! must use the wrapper or be quoted so YAML does not treat it as a tag. Combine conditions with &&, ||, and !, just like in a shell:
+
+
