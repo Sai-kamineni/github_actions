@@ -887,3 +887,7 @@ Uploading with actions/upload-artifact
     name: build-report
     path: report.txt
 ```
+
+#### Two inputs matter:
+- name is the label the artifact appears under on the run page. Pick something you would search for later.
+- path is what to save. It can be one file, a folder, or a glob like dist/*.txt.
