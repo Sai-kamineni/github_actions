@@ -436,3 +436,35 @@ This endpoint is paginated and returns 30 jobs by default. For runs within that 
 { "job": "checks", "name": "Read the readme", "conclusion": "failure" }
 { "job": "checks", "name": "Show the Python version", "conclusion": "skipped" }
 ```
+Read each job separately. Within one ordinary job, its first failed step is where that job's problem surfaced; later ordinary steps may be skipped. Parallel jobs have independent timelines, and conditions can allow later steps to run. Steps like "Set up job" are added by GitHub around your own steps; inspect them too when they fail.
+
+Two habits make this workable:
+- Save the response to a file with > so you can run several jq filters over it without calling the API again.
+- While a run is still progressing, unfinished jobs or steps can have null conclusions even though completed steps already have one.
+
+## 10.What is a context
+In this lesson you will learn what a context is and how the ${{ }} syntax reads values from one.
+
+Every workflow you pushed so far did the same thing on every run. Real pipelines are not like that. A deploy job needs to know which branch triggered it. A notification step wants the commit id it just built. That information changes on every run, so you cannot type it into the workflow file.
+
+GitHub solves this with contexts. A context is a bundle of named values available as the run and its jobs progress. Your workflow file says which value it wants, and GitHub evaluates the expression when that workflow field is processed.
+
+#### The expression syntax
+You ask for a context value with an expression. An expression is wrapped in ${{ }}:
+```
+steps:
+  - name: Show the branch
+    run: echo "This run was triggered on ${{ github.ref }}"
+```
+GitHub reads the workflow file, sees ${{ github.ref }}, and replaces it with the real Git ref of this run, which can identify a branch, tag, or pull-request merge ref. By the time the shell runs the echo, the expression is gone and only the value remains.
+
+#### The main contexts
+There are several contexts. The three you will meet first:
+
+- github - facts about the run and the repository: branch, commit, event, who pushed.
+- runner - facts about the machine executing the job, like its operating system.
+- job - the status of the current job while it runs.
+
+Property syntax commonly reads a context value as context.field, for example github.sha or runner.os. Index syntax such as github['sha'] also works, and functions can receive a whole context object, as in toJSON(github).
+
+
