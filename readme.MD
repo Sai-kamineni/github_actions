@@ -1316,3 +1316,27 @@ So the rule is short: a self-hosted runner belongs on private repositories only,
 Register at the repository level. GitHub also allows one runner to serve a whole organization. The runner you register in this topic serves exactly one repository, so only workflows from that one repository can ever reach this VM. The fewer repositories can send code to your machine, the fewer places a mistake can come from.
 
 Keep deploy jobs small. Give the self-hosted runner only the work that truly needs your machine, like copying a release file into place. Run tests and builds on GitHub-hosted runners, where the machine is destroyed after every job. Less code running on your machine means less code that can go wrong on it.
+
+## 22.Permission and Security
+### The GITHUB_TOKEN and the permissions block
+In this lesson you will learn what the automatic GITHUB_TOKEN is, how it differs from your personal access token, and how the permissions: block limits what a workflow can do.
+
+Some actions in your workflows already talk to the GitHub API. The checkout action, for example, downloads your repository. It never asked you for a token. Where did it get one?
+
+#### The automatic token
+Before each job starts, GitHub creates a job-scoped token and exposes it as GITHUB_TOKEN. Three things make it different from the personal access token you created earlier in this course:
+
+- It is created by GitHub, not by you. You never see or store it.
+Its access is limited to the repository containing the workflow. A PAT's repository access and permissions depend on token type, selected repositories, scopes, and organization policy.
+- It expires when the job ends or after GitHub's 24-hour maximum, whichever comes first. A PAT follows its configured expiration and can also be revoked.
+
+That design limits the damage if something leaks. A leaked GITHUB_TOKEN soon becomes useless. A leaked PAT remains dangerous within whatever access that PAT was granted.
+
+#### The permissions block
+Default GITHUB_TOKEN permissions can be configured at enterprise, organization, and repository levels (Settings, then Actions, then Workflow permissions): older repositories were left read and write, newer ones default to read-only. Most workflows only need to read code. Do not rely on the default - state what the workflow needs. The permissions: block sets a smaller explicit grant:
+```
+permissions:
+  contents: read
+```
+
+At the top level of a workflow file, this applies to every job. Listing one permission sets unlisted configurable permissions to none; metadata: read remains available. This token can read repository contents but cannot write them. That habit is called least privilege: give each workflow the smallest access that still lets it work. A test workflow that can only read code cannot push commits, close issues, or delete releases, even if one of its steps is compromised.
