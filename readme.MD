@@ -1417,3 +1417,44 @@ concurrency:
   cancel-in-progress: true
 ```
 
+#### Two things happen here:
+
+- group: names the lane. Using github.ref in the name gives every branch its own lane, so a run on main never blocks a run on a feature branch.
+- cancel-in-progress: true means a new run requests cancellation of the older running run instead of waiting behind it. Cancellation can take time, and concurrency ordering is not guaranteed.
+
+### When not to cancel
+Cancelling is right for tests: only the newest code matters. It is wrong for deployments, where killing a half-finished deploy can leave the target broken. For deploy workflows, keep the group but set cancel-in-progress: false. One run can remain pending behind the active run. If another run arrives, GitHub replaces the older pending run; concurrency groups are not a durable first-in, first-out deployment queue.
+
+### Status badges and focused jobs
+In this lesson you will learn how to show a workflow's status in your README and why several small jobs beat one big one.
+
+#### The status badge
+GitHub serves a small image for every workflow that shows the result of its latest run: green for passing, red for failing. The image lives at a predictable URL:
+```
+https://github.com/OWNER/REPO/actions/workflows/FILE.yml/badge.svg
+```
+
+Put it in the README with markdown image syntax - an exclamation mark, a label in square brackets, and the URL in parentheses:
+```
+![ci](https://github.com/priya/demo/actions/workflows/ci.yml/badge.svg)
+```
+
+Now anyone who opens the repository sees the pipeline's health in the first second, without visiting the Actions tab. A badge that has been red for two weeks also tells a story, just not a flattering one.
+
+#### Small, focused jobs
+It is tempting to put lint, tests, and build into one long job. Resist it. Separate jobs give you three things:
+
+- Parallel execution: independent jobs run at the same time on different runners, so the whole run finishes sooner.
+- A readable failure: a red job named "lint" points at the problem before you open a single log.
+Precise reruns: GitHub lets you rerun only the failed job instead of the whole pipeline.
+
+The job dependency topic showed the tool for ordering them when order matters: needs:. When order does not matter, leave them independent and let them run in parallel.
+
+### A troubleshooting checklist
+In this lesson you will learn a short checklist for the three problems you will hit most often with GitHub Actions. Keep it as a reference - no task follows.
+
+##### The workflow did not trigger
+No run appears in the Actions tab after a push. Check, in order: the file must sit in .github/workflows/ at the repository root, on the branch you pushed - a workflow on a feature branch does not run for pushes to main. Then read the on: section again: does the event you caused actually match? A paths: or branches: filter that does not match your change silently skips the run. Finally, remember that GitHub reads the workflow file as it exists in the pushed commit, so a fix to the trigger only takes effect on the next push.
+
+#### The run is red
+Open the run, find the first red step, and read its log from the bottom up - the last lines usually name the real error. Ask what is different from your machine: the runner starts empty, so a missing checkout step or an uninstalled dependency explains most "works locally" failures. If the YAML itself is the problem, the run fails immediately with a syntax error at the top, which is exactly what running actionlint before pushing would have caught. And if the step was killed after a fixed time, that is your own timeout-minutes doing its job - find out what hung.
