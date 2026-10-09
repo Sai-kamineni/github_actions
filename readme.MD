@@ -1095,3 +1095,46 @@ The uses: path comes in two forms:
 - Another repository: owner/repo/.github/workflows/checks.yml@main
 and the @ref (a branch, tag, or commit) is required here.
 
+In the run view, jobs from the called workflow appear under the caller's job name, joined with a slash, like checks / test. The jobs API shows the same names, which is how this topic's checks will confirm your call worked.
+
+### Passing inputs and secrets
+In this lesson you will learn how a caller sends values into a reusable workflow with with: and secrets:.
+
+A shared checks workflow is only useful if each caller can adjust it a little. The pixelpost app needs Python 3.12, the internal tool still needs 3.11. Same steps, one different value. That is what inputs are for.
+
+#### Declaring inputs
+The reusable workflow declares its inputs under workflow_call:
+```
+on:
+  workflow_call:
+    inputs:
+      app-name:
+        type: string
+        required: true
+```
+
+Each input has a type (string, number, or boolean) and can be required or carry a default. Inside the reusable workflow you read it through the inputs context:
+```
+steps:
+  - run: echo "Checking ${{ inputs.app-name }}"
+```
+
+#### The caller fills them in
+The caller passes values with with:, right under uses::
+```
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+    with:
+      app-name: pixelpost
+```
+
+#### Secrets do not flow automatically
+Repository secrets are not visible inside a called workflow by default. The reusable workflow must declare which secrets it expects:
+```
+on:
+  workflow_call:
+    secrets:
+      NOTIFY_TOKEN:
+        required: true
+```
