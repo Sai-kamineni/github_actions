@@ -110,4 +110,5 @@ Read it top to bottom:
 - name - a display name. It appears in GitHub's user interface next to each run. Optional, but always set it.
 - on - the event that triggers the workflow. Here, any push. This is the "when".
 - jobs - a map of jobs. Each key under jobs is a job id you invent (test here). A normal job defines runs-on, the runner label, and steps, a list of steps. A job that calls a reusable workflow uses job-level uses instead.
+
 Steps are a YAML list: each step starts with a -. A step that runs a shell command uses the run key, and name gives the step a label in the logs.
