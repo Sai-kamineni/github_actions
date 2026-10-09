@@ -89,3 +89,25 @@ The rules are short:
 One repository, many workflows. The pixelpost team might keep ci.yml for tests on every push and deploy.yml for releases. Each file is independent: its own trigger, its own jobs.
 
 In this topic you will practice locally, in folders on this VM, without pushing anything to GitHub. The file format is identical either way, so everything you write here works unchanged once you connect a real repository later.
+
+#### name, on, and jobs
+In this lesson you will learn three basic top-level keys used in a workflow file and enough YAML to write one.
+
+Workflow files are YAML. YAML is a plain text format built on two ideas: key: value pairs, and indentation to show what belongs inside what. Indentation uses spaces, never tabs, and must stay consistent. This course uses two spaces per level.
+```
+name: pixelpost CI
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hello
+        run: echo "hello from CI"
+```
+
+Read it top to bottom:
+
+- name - a display name. It appears in GitHub's user interface next to each run. Optional, but always set it.
+- on - the event that triggers the workflow. Here, any push. This is the "when".
+- jobs - a map of jobs. Each key under jobs is a job id you invent (test here). A normal job defines runs-on, the runner label, and steps, a list of steps. A job that calls a reusable workflow uses job-level uses instead.
+Steps are a YAML list: each step starts with a -. A step that runs a shell command uses the run key, and name gives the step a label in the logs.
