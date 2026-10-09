@@ -941,3 +941,22 @@ Three details to notice:
 
 This upload-then-download pattern is how real pipelines split work: build once, then test, scan, or deploy the same files in later jobs.
 
+## 17.cache
+### What the cache action does
+In this lesson you will learn what actions/cache is for and how it differs from an artifact.
+
+Every runner starts empty. That kept things clean in earlier topics, but it has a price: work gets repeated. A Python job downloads the same packages from the internet on every single run. The packages did not change; the runner just forgot them.
+
+A cache saves a folder at the end of one run and restores it at the start of the next. Same repository, different runs. The download step still runs, but it finds everything already on disk and finishes in seconds.
+
+#### The cache step
+```
+- name: Cache pip downloads
+  uses: actions/cache@v4
+  with:
+    path: ~/.cache/pip
+    key: pip-v1
+```
+- path is the folder to save and restore. For pip that is ~/.cache/pip, where pip keeps downloaded packages.
+- key is the label the saved folder is stored under. A run that asks for the same key gets the same folder back.
+
