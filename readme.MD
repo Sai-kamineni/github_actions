@@ -594,3 +594,27 @@ curl -s -H "Authorization: token $(cat /root/.github/token)" \
 
 The response shows each variable's name and value. That last part matters: variables are visible to anyone who can read the repository's settings. They are for configuration, never for passwords. The next topic covers what to use for those.
 
+## 12.What is a secret
+In this lesson you will learn what a repository secret is and how it differs from a repository variable.
+
+Pipelines constantly need sensitive values: an API token to push a package, a password to reach a database, a key to log in to a server. The repository variables from the last topic are the wrong place for these. Anyone who can list the variables sees their values in plain text.
+
+For sensitive values, GitHub has repository secrets. A secret looks like a variable - a name and a value stored on the repository - but GitHub treats the value very differently:
+
+- The value is encrypted the moment you save it.
+- GitHub never shows it again. Not in the settings page, not in the API. You can replace a secret or delete it, but you cannot read it back.
+- Only a running workflow can receive the decrypted value.
+
+#### What the API shows
+The secrets endpoint of the API lists names and dates, nothing more:
+```
+login=$(curl -s -H "Authorization: token $(cat /root/.github/token)" \
+  https://api.github.com/user | jq -r '.login // empty')
+curl -s -H "Authorization: token $(cat /root/.github/token)" \
+  "https://api.github.com/repos/$login/actions-journey/actions/secrets" | jq .
+```
+
+There is no value field in the response. This is a deliberate design: if a token leaked and could read your secrets back, one stolen token would expose every password the repository holds. Because values are write-only, a leaked token cannot harvest them.
+
+The simple rule: configuration goes in variables, anything you would not paste in a chat message goes in secrets.
+
