@@ -199,3 +199,30 @@ This fires only when the push changes at least one file under docs/. The pattern
 Filters combine. Both must match for the workflow to run:
 
 One YAML detail: a pattern like docs/** starts with a plain letter, but patterns beginning with * must be quoted, because * is a YAML syntax character. Quoting every pattern is a safe habit.
+
+### schedule and workflow_dispatch
+In this lesson you will learn two triggers that do not need a code change: schedule runs a workflow on a timer, and workflow_dispatch adds a manual run button.
+
+#### schedule: run on a timer
+Some jobs should run whether or not anyone pushed: a nightly full test run, a weekly dependency check, a daily backup. The schedule event uses cron syntax, a compact five-field time format:
+```
+on:
+  schedule:
+    - cron: "0 2 * * *"
+```
+
+The five fields, left to right: minute, hour, day of month, month, day of week. A * means every. So 0 2 * * * reads "minute 0, hour 2, every day" - 02:00 every night, in UTC time.
+
+More examples: 30 6 * * 1 is 06:30 every Monday (day of week 1). 0 */6 * * * is every 6 hours. Always quote the cron string: it contains *, a YAML syntax character.
+
+#### workflow_dispatch: a run button
+```
+on:
+  workflow_dispatch:
+```
+
+This adds a "Run workflow" button on the workflow's page in GitHub. Nothing runs until a person clicks it. Teams use it for actions that need a human decision, like the continuous delivery deploy from topic 01, and for testing a workflow without pushing a fake commit.
+
+Note the trailing colon with nothing after it: the event takes settings later (like input fields), so it is written as a map key even when empty.
+
+A workflow can combine all of these. A nightly run plus a manual button is a very common pair, and you will build exactly that in this topic's last task.
