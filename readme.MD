@@ -361,3 +361,34 @@ When you push a commit to GitHub, this happens:
 - Each job in the run is handed to a runner. A GitHub-hosted runner uses a fresh virtual machine for this job.
 - The runner executes the steps in order and streams logs back. GitHub discards a GitHub-hosted runner after the job ends; self-hosted runners can persist.
 
+Two details matter here. First, the workflow file must be on the branch you push, inside .github/workflows/, or GitHub never sees it. Second, GitHub-hosted runners start fresh. Jobs that need files from the repository must explicitly check out the code; checkout is not automatic.
+
+#### Where results live
+Every run, its jobs, and its logs are stored by GitHub. You can see them in the repository's Actions tab in the browser, and you can read the same data from the GitHub API with curl, the way the checks in this course do.
+
+### Anatomy of a run
+In this lesson you will learn how a run is structured and how to read one from the API, the same way this course's checks do.
+
+Your push just created a run. On GitHub, a run is a tree with three levels:
+
+- Run: one execution of one workflow, triggered by one event. It has a number, a status, and a conclusion.
+- Jobs: the parallel units inside the run. Each GitHub-hosted job gets a fresh runner VM; self-hosted - jobs are assigned to available registered runners.
+Steps: the ordered commands inside a job. Each step has its own log and its own success or failure.
+
+#### Status versus conclusion
+A run has two fields that beginners mix up:
+
+- status says where the run is in its lifecycle. Common values include queued, in_progress, and completed; waiting or pending states can also appear.
+- conclusion says how it ended, and is empty until the run completes. Common conclusions include success, failure, cancelled, and skipped; other conclusions are possible.
+
+A run can be completed and still be a failure. Always read both.
+
+#### Reading runs with curl
+The Actions tab shows all of this in the browser. The same data comes from the API:
+```
+curl -s -H "Authorization: token $(cat /root/.github/token)" \
+  "https://api.github.com/repos/OWNER/actions-journey/actions/runs?per_page=1" \
+  | jq '.workflow_runs[0] | {status, conclusion, name}'
+```
+
+This exact pattern, list the runs and inspect the newest one, is how every GitHub-side check in this course grades your work.
