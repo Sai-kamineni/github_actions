@@ -748,5 +748,48 @@ steps:
 On a push to any other branch, GitHub marks the step as skipped. It shows up grey in the log, costs nothing, and the job carries on with the next step.
 
 Inside if you can usually skip the ${{ }} wrapper - GitHub treats the whole line as an expression already. An expression beginning with ! must use the wrapper or be quoted so YAML does not treat it as a tag. Combine conditions with &&, ||, and !, just like in a shell:
+`if: github.ref == 'refs/heads/main' && github.event_name == 'push'`
 
+#### if on a job
+The same keyword works one level up. A skipped job never starts a runner at all:
+```
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "deploying"
+```
 
+One thing to know: by default, when a job is skipped, jobs that needs it are skipped too. A downstream job can override this with a condition such as if: ${{ always() }}.
+
+### Status functions
+In this lesson you will learn the functions that let a step react to how the run is going: success(), failure(), and always().
+
+Here is the default rule first, because everything builds on it: when a step fails, GitHub skips every later step in that job. Usually that is what you want. But not always. Imagine a job that starts a test database, runs the tests, and then has to stop the database. If the tests fail, the stop step is skipped, and the database keeps running until the runner dies. Cleanup work must not depend on success.
+
+### The three functions
+You use them inside a step's if:
+
+- success() - true when no earlier step in the job has failed. This is the invisible default: a step with no if behaves as if: success().
+- failure() - true when some earlier step has failed. Use it for reactions to a broken run, like printing extra debug information.
+- always() - true no matter what happened. Use it for cleanup that must run in both the good and the bad case.
+
+The cleanup pattern
+```
+steps:
+  - name: Start test database
+    run: echo "db up"
+  - name: Run tests
+    run: ./run-tests.sh
+  - name: Collect debug info
+    if: failure()
+    run: echo "dumping logs for the red run"
+  - name: Stop test database
+    if: always()
+    run: echo "db down"
+```
+
+If the tests pass, the debug step is skipped and cleanup runs. If the tests fail, the debug step runs, cleanup still runs, and the job is still marked failed. always() does not rescue the job's conclusion - it only rescues that one step from being skipped.
+
+You can also mix status functions with normal conditions, for example if: failure() && github.ref == 'refs/heads/main' to react to failures on main only.
