@@ -870,3 +870,20 @@ strategy:
 ```
 
 Whether the default is right depends on why the matrix exists, and you will weigh exactly that trade in the scenario after the next task.
+
+## 16.Artifacts
+### What is an artifact
+In this lesson you will learn what an artifact is, how the upload-artifact action saves one, and how long GitHub keeps it.
+
+Every job using a GitHub-hosted runner gets a fresh runner, which GitHub discards when the job ends. Whatever the job wrote to disk - a built package, a test report, a log file - is discarded with it. Usually that is fine. But sometimes the file IS the point. A build job that produces a package nobody can download did not really produce anything.
+
+An artifact is a file (or a folder of files) that a workflow hands to GitHub for safekeeping before the runner dies. GitHub stores it next to the run, and you can download it from the run page or through the API.
+
+Uploading with actions/upload-artifact
+```
+- name: Upload the report
+  uses: actions/upload-artifact@v4
+  with:
+    name: build-report
+    path: report.txt
+```
