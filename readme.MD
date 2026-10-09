@@ -643,3 +643,71 @@ Masking is a safety net, not permission. Never write a step that echoes a secret
 Two habits keep you safe:
 - Pass secrets to commands through env, never paste them into run lines or commit them in any file.
 - Treat any secret that ever appeared in output, even masked, as worth rotating if you are unsure.
+
+## 13.Job dependencies
+### Ordering jobs with needs
+In this lesson you will learn how to make one job wait for another, using the needs keyword.
+
+Back in topic 05 you saw that independent jobs are eligible to run in parallel. GitHub-hosted jobs receive fresh runners, while self-hosted jobs use available registered runners. But think about a real pipeline for your actions-journey repository: you want to run the tests first, and only deploy if the tests pass. Starting both at the same time would be wrong. A deploy that does not wait for tests is not a pipeline, it is a race.
+
+#### The needs keyword
+needs on a job lists the jobs that must finish successfully before this job starts:
+```
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "running tests"
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - run: echo "deploying"
+```
+
+Now deploy sits in a waiting state until test finishes. Two rules to remember:
+
+- By default, if test fails, deploy is skipped. A job-level condition such as if: ${{ always() }} can explicitly allow a dependent job to run after a failed or skipped need.
+- A job can need several jobs: needs: [test, lint] means wait for both.
+
+#### The graph this creates
+With needs, your jobs form a graph. GitHub reads it and runs everything that can run, as early as it can:
+
+Jobs without needs still start immediately and in parallel. Only the jobs you connect wait for each other.
+
+### Passing data with job outputs
+In this lesson you will learn how one job hands a value to a job that needs it.
+
+needs gives you order, but jobs still run on separate runners. Imagine a build job that computes a version number like 1.4.2. The deploy job runs on a different machine, so that number does not exist there. Files, variables, everything from the build runner is gone. You need a way to pass the value across.
+
+#### Step outputs first
+A step publishes a value by writing a name=value line into the file that the GITHUB_OUTPUT environment variable points to:
+```
+steps:
+  - name: Compute version
+    id: ver
+    run: echo "version=1.4.2" >> "$GITHUB_OUTPUT"
+```
+
+The step needs an id so other places can refer to it. Inside the same job, another step reads it with the expression steps.ver.outputs.version.
+
+#### Lifting a step output to a job output
+To make the value visible outside the job, declare it in the job's outputs: map:
+```
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+    steps:
+      - name: Compute version
+        id: ver
+        run: echo "version=1.4.2" >> "$GITHUB_OUTPUT"
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - run: echo "Deploying ${{ needs.build.outputs.version }}"
+```
+The chain has three links: the step writes to $GITHUB_OUTPUT, the job's outputs: map lifts the step output up, and the downstream job reads it through the needs context. The downstream job must list the producer in its own needs:, otherwise the needs context has nothing in it.
+
