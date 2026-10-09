@@ -323,3 +323,6 @@ steps:
     run: cat README.md
 ```
 
+Order matters, as you learned in the previous topic: checkout must come before any step that reads repository files. That is why almost every workflow you will ever read has checkout as its first step.
+
+One useful flip side: if a job never touches the repository files, for example it only calls an external API, it does not need checkout at all.
