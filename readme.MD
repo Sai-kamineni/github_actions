@@ -273,3 +273,12 @@ On a Linux runner the commands run in bash by default. The shell: key makes the 
 ```
 
 You rarely need shell: on Linux, but you will see it often in real workflows, especially ones that also run on Windows, where the default is PowerShell instead.
+
+#### Changing the folder with working-directory
+Every run step starts in the root of the workspace. If the commands belong in a subfolder, set working-directory: instead of writing cd at the top of the script:
+```
+- name: Work inside the app folder
+  working-directory: app
+  run: ls
+```
+This keeps the run script about the work, not about navigation, and it only affects that one step.
