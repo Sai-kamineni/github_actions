@@ -552,9 +552,45 @@ jobs:
 Inside run commands you read them like any shell variable, with $APP_NAME. No ${{ }} needed - the runner exports them before the shell starts. Variable names stay exact: APP_NAME and LOG_LEVEL include their underscores.
 
 #### Precedence: the closest level wins
+### env at three levels
 When the same name is set at more than one level, the most specific one wins. Step beats job, job beats workflow.
 
 In the example, the verbose step prints journey with log level debug. Every other step in the job would print info, because only this step overrides it.
 
 This pattern is everywhere in real pipelines: sensible defaults at the workflow level, one job that needs something different, one step that needs even more detail.
+
+### Repository variables
+In this lesson you will learn what repository variables are and how to create and list them with the GitHub API.
+
+The env blocks from the last lesson live inside the workflow file. Change a value, and you must edit the file and push a commit. Some values do not belong there: a deploy region, a server name, a flag the team flips without touching code.
+
+For these, GitHub stores repository variables on the repository itself, outside any file. Every workflow in the repository can read them through the vars context:
+```
+steps:
+  - name: Show the target region
+    run: echo "Deploying to ${{ vars.DEPLOY_REGION }}"
+```
+
+Change the variable's value, and the next run picks it up. No commit needed.
+
+#### Creating a variable with curl
+Repository variables have their own API endpoint. One POST request creates a variable:
+```
+login=$(curl -s -H "Authorization: token $(cat /root/.github/token)" \
+  https://api.github.com/user | jq -r '.login // empty')
+curl -s -H "Authorization: token $(cat /root/.github/token)" \
+  -d '{"name":"DEPLOY_REGION","value":"eu-west-1"}' \
+  "https://api.github.com/repos/$login/actions-journey/actions/variables"
+```
+
+The JSON body carries two fields: the variable's name and its value. A successful create returns nothing, which is normal for this endpoint.
+
+#### Listing variables
+A GET request on the same endpoint lists what exists:
+```
+curl -s -H "Authorization: token $(cat /root/.github/token)" \
+  "https://api.github.com/repos/$login/actions-journey/actions/variables" | jq .
+```
+
+The response shows each variable's name and value. That last part matters: variables are visible to anyone who can read the repository's settings. They are for configuration, never for passwords. The next topic covers what to use for those.
 
