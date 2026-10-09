@@ -1056,3 +1056,42 @@ jobs:
 Read it as a sentence: get the code, get Python, get the dependencies, prove the code works. Nearly every Python CI pipeline you will meet is this sequence with extras bolted on.
 
 ## 19.Reusable workflows
+In this lesson you will learn what a reusable workflow is, the trigger that makes one, and the uses: line that calls it.
+
+The pixelpost team now has three workflows: one for the app, one for the docs site, one for a small internal tool. All three contain the same twenty lines: check out the code, set up Python, install dependencies, run pytest. When the team upgrades Python, someone edits the same lines three times. One day they miss a file, and one pipeline quietly tests the wrong version.
+
+A reusable workflow fixes this. You write the shared steps once, in their own workflow file, and other workflows call it like a function.
+
+#### The workflow_call trigger
+A workflow becomes callable by listing workflow_call in its on: section:
+```
+name: checks
+on:
+  workflow_call:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "running the shared checks"
+```
+With only this trigger, the workflow never starts on its own. No push, no schedule. It waits until another workflow calls it.
+
+#### Calling it
+The caller replaces a whole job with a uses: line:
+```
+name: pipeline
+on: push
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+```
+
+Note what is missing: the calling job has no runs-on: and no steps:. It hands everything to the called workflow, which brings its own jobs and runners.
+
+The uses: path comes in two forms:
+
+- Same repository: ./.github/workflows/checks.yml - a path starting with ./, always from the repository root.
+- Another repository: owner/repo/.github/workflows/checks.yml@main
+and the @ref (a branch, tag, or commit) is required here.
+
