@@ -392,3 +392,24 @@ curl -s -H "Authorization: token $(cat /root/.github/token)" \
 ```
 
 This exact pattern, list the runs and inspect the newest one, is how every GitHub-side check in this course grades your work.
+
+## 9.Logs and Debugging
+### How a run fails
+In this lesson you will learn what a failed run is made of, so you know exactly where to look when one goes red.
+
+Sooner or later a pixelpost push turns the Actions tab red. The run says failure, but the run did not fail as one big block. A common command failure starts at the bottom of the tree you met in the run anatomy lesson, and climbs up:
+
+- A step runs a command, and the command exits with a non-zero exit code. That step's conclusion becomes failure.
+- By default, the job stops there. Ordinary remaining steps are skipped, and the job's conclusion becomes failure.
+- A failed required job makes the run fail too.
+
+This is the default path. continue-on-error can allow a step or job failure, while conditions such as if: always() or if: failure() can run later steps. Actions can also fail during setup or execution without a learner-written shell command.
+
+Debugging is walking this chain in reverse: the red run points you to the failed job, the failed job points you to the failed step, and the failed step's log shows the command and its error message. The message at the bottom of that log is the actual problem. Everything above it is just where the problem surfaced.
+
+#### The two failures you will see most
+Almost every early workflow failure is one of these:
+
+- Command not found. The command name has a typo, or the tool is not installed on the runner.
+- No such file or directory. The step reads a repository file, but no checkout step ran before it, so the workspace is empty. You saw why in topic 06.
+Both look dramatic in a red run and both are one-line fixes once you find the failed step.
