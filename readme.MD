@@ -1150,7 +1150,7 @@ There is a shortcut, secrets: inherit, which passes every secret the caller can 
 
 One boundary to remember: a reusable workflow replaces a whole job. You cannot call one from inside a step. When you want a shareable block of steps, you need a different tool, and that is the next topic.
 
-## 19.Composite actions
+## 20.Composite actions
 In this lesson you will learn what a composite action is, the action.yml file that defines one, and how a workflow in the same repository uses it.
 
 Since the using-actions topic, you have used actions written by other people, like actions/checkout. A composite action is an action you write yourself. It bundles a group of steps under one name, so any job can run the whole group with a single uses: line.
@@ -1243,3 +1243,6 @@ That one difference decides everything else:
 - A composite action shares the job's runner, workspace, and environment. Files created by earlier steps are right there. A reusable workflow starts separate jobs with separate job workspaces. Do not rely on shared files, even if self-hosted jobs happen to use the same physical runner; pass data through defined inputs, outputs, artifacts, or secrets. Some caller context and the automatic GitHub token remain available by design.
 - A reusable workflow can contain several jobs, a matrix, and needs: chains. A composite action is only ever a flat list of steps.
 - A caller can pass declared secrets to a reusable workflow or use secrets: inherit where GitHub permits it. Environment secrets in the called job and the automatic GitHub token follow their own rules. A composite action has no secrets section - the calling workflow usually hands a needed secret in as an input or an environment variable.
+
+A rule of thumb that holds up well: if the shared thing needs its own runner or several jobs, make it a reusable workflow. If it is a recipe of steps you want inside many jobs, make it a composite action. Teams commonly use both - a reusable workflow for the pipeline's shape, composite actions for the small recipes inside it.
+
