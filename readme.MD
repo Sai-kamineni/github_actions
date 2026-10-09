@@ -1190,3 +1190,30 @@ jobs:
 ```
 
 The checkout step is not decoration. A local action is read from the job's copy of the repository, and the runner starts empty. Without checkout first, the folder does not exist on the runner and the job fails.
+
+### Composite action inputs
+In this lesson you will learn how a composite action declares inputs and how its steps read them.
+
+The build-info action from the last lesson prints the same text everywhere. To make an action useful across pipelines, the caller needs a way to hand values in. Actions use an inputs: section at the top of action.yml, next to name: and description::
+```
+name: announce
+description: Print a start-of-job announcement
+inputs:
+  app-name:
+    description: Name of the app being built
+    required: true
+  environment:
+    description: Target environment
+    required: false
+    default: staging
+runs:
+  using: composite
+  steps:
+    - run: echo "Building ${{ inputs.app-name }} for ${{ inputs.environment }}"
+      shell: bash
+```
+Two details differ from reusable workflow inputs:
+
+- There is no type: field. Every action input is a string.
+- An input can be required, carry a default, or be optional with no default. An omitted optional input can therefore be empty.
+- Steps read inputs through the same inputs context you used in reusable workflows: ${{ inputs.app-name }}.
