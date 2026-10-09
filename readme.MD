@@ -793,3 +793,30 @@ steps:
 If the tests pass, the debug step is skipped and cleanup runs. If the tests fail, the debug step runs, cleanup still runs, and the job is still marked failed. always() does not rescue the job's conclusion - it only rescues that one step from being skipped.
 
 You can also mix status functions with normal conditions, for example if: failure() && github.ref == 'refs/heads/main' to react to failures on main only.
+
+## 15.Matrix
+### What a matrix is
+In this lesson you will learn how one job definition can run as many jobs, once per combination of values.
+
+Say your team supports three Python versions. Users run 3.10, 3.11, and 3.12, so the tests must pass on all three. You could copy the test job three times and change one line in each copy. It works, until someone updates two copies and forgets the third. The matrix keyword removes the copies.
+
+### strategy.matrix
+```
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run a version check
+        run: python3 -c "import sys; print(sys.version)"
+```
+GitHub expands this one definition into three separate jobs, named after the values: tests (3.10), tests (3.11), and tests (3.12). Each runs on its own fresh runner, in parallel, like any other jobs.
+
+Two new pieces here:
+- The matrix context: matrix.python-version holds this job's own value from the expansion, so every copy installs a different Python.
+-  actions/setup-python@v5: a ready-made action, like the checkout action from topic 06, that installs the requested Python version on the runner.
