@@ -1,4 +1,4 @@
-## Continuous integration
+## 1.Continuous integration
 In this lesson you will learn what continuous integration (CI) is and what a CI check does on every push.
 
 Back to the pixelpost team. Their worst Fridays happened because broken code sat unnoticed in the shared codebase for days. By the time someone found it, three other changes were stacked on top.
@@ -76,3 +76,16 @@ Every box from topic 01 has an Actions name now. The trigger is an event. The wr
 #### Actions is not the only tool
 Jenkins, GitLab CI, and CircleCI do the same work. GitHub Actions stands out because it is built into GitHub: no extra server, no separate account, and workflow files live next to the code they test. Since most teams already keep code on GitHub, it is often the shortest path to a working pipeline.
 
+## 3.The .github/workflows folder
+In this lesson you will learn where workflow files live and what the file names look like.
+
+GitHub does not search your whole repository for workflows. It looks in exactly one place: the folder .github/workflows/ at the root of the repository. A workflow file anywhere else is ignored, silently, with no error. That silence is a classic beginner trap: the file looks perfect, but nothing ever runs because it sits in the wrong folder.
+
+The rules are short:
+- The folder is .github/workflows/, starting with a dot, at the repository root.
+- Every file inside ending in .yml or .yaml is treated as a workflow.
+- The file name itself is your choice. ci.yml, deploy.yml, nightly.yml - pick names that say what the workflow does.
+
+One repository, many workflows. The pixelpost team might keep ci.yml for tests on every push and deploy.yml for releases. Each file is independent: its own trigger, its own jobs.
+
+In this topic you will practice locally, in folders on this VM, without pushing anything to GitHub. The file format is identical either way, so everything you write here works unchanged once you connect a real repository later.
