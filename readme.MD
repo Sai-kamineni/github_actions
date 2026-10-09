@@ -891,3 +891,14 @@ Uploading with actions/upload-artifact
 #### Two inputs matter:
 - name is the label the artifact appears under on the run page. Pick something you would search for later.
 - path is what to save. It can be one file, a folder, or a glob like dist/*.txt.
+
+### Retention
+Artifacts are not kept forever. The default is 90 days, then GitHub deletes them. You can shorten that per artifact:
+```
+with:
+  name: build-report
+  path: report.txt
+  retention-days: 5
+```
+Shorter retention is a good habit for throwaway files like test reports. Storage on private repositories counts against a quota, and even on public ones a pile of stale artifacts is just noise.
+
