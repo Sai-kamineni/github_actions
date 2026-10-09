@@ -1458,3 +1458,9 @@ No run appears in the Actions tab after a push. Check, in order: the file must s
 
 #### The run is red
 Open the run, find the first red step, and read its log from the bottom up - the last lines usually name the real error. Ask what is different from your machine: the runner starts empty, so a missing checkout step or an uninstalled dependency explains most "works locally" failures. If the YAML itself is the problem, the run fails immediately with a syntax error at the top, which is exactly what running actionlint before pushing would have caught. And if the step was killed after a fixed time, that is your own timeout-minutes doing its job - find out what hung.
+
+#### The push was rejected
+When git push fails, read the message before touching the workflow - this is a git problem, not an Actions problem. An authentication error means the stored token is wrong, expired, or missing a scope; the setup topic covered where the credentials live. A message about the remote containing work you do not have means the repository on GitHub moved ahead - run git pull first, then push again.
+
+The habit behind all three sections is the same: read the actual message, then reason about which machine and which commit it refers to.
+
