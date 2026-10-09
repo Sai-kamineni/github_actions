@@ -820,3 +820,31 @@ GitHub expands this one definition into three separate jobs, named after the val
 Two new pieces here:
 - The matrix context: matrix.python-version holds this job's own value from the expansion, so every copy installs a different Python.
 -  actions/setup-python@v5: a ready-made action, like the checkout action from topic 06, that installs the requested Python version on the runner.
+
+#### More than one axis
+A matrix can have several lists, and GitHub builds every combination:
+```
+matrix:
+  python-version: ["3.11", "3.12"]
+  os: [ubuntu-latest, macos-latest]
+```
+
+Two versions times two systems is four jobs. Set runs-on: ${{ matrix.os }} and each job lands on the right machine. Three axes multiply again, so counts grow fast: keep matrices as small as your real support promise.
+
+### include, exclude, and fail-fast
+In this lesson you will learn how to adjust a matrix after expansion, and how one failing cell affects the rest.
+
+A pure grid is often almost right. Your team tests two Python versions on two systems, but the macOS build for the oldest Python is broken upstream, and you also want one extra job that tries the next Python beta. The matrix has keywords for both cases.
+
+#### exclude: remove combinations
+```
+strategy:
+  matrix:
+    python-version: ["3.11", "3.12"]
+    os: [ubuntu-latest, macos-latest]
+    exclude:
+      - python-version: "3.11"
+        os: macos-latest
+```
+
+The grid expands to four, then the matching combination is removed, leaving three jobs.
