@@ -412,4 +412,27 @@ Almost every early workflow failure is one of these:
 
 - Command not found. The command name has a typo, or the tool is not installed on the runner.
 - No such file or directory. The step reads a repository file, but no checkout step ran before it, so the workspace is empty. You saw why in topic 06.
+
 Both look dramatic in a red run and both are one-line fixes once you find the failed step.
+
+### Reading a run with the jobs API
+In this lesson you will learn how to find the failed step of a run from the command line, using the jobs API.
+
+In the run anatomy lesson you listed runs with curl and read their status and conclusion. That tells you a run failed, but not where. The next level down has its own endpoint. First, grab the id of the newest run of one workflow:
+```
+curl -s -H "Authorization: token $(cat /root/.github/token)" \
+  "https://api.github.com/repos/OWNER/actions-journey/actions/workflows/hello.yml/runs?per_page=1" \
+  | jq '.workflow_runs[0].id'
+```
+Then ask for that run's jobs, putting the id into the URL:
+```
+curl -s -H "Authorization: token $(cat /root/.github/token)" \
+  "https://api.github.com/repos/OWNER/actions-journey/actions/runs/RUN_ID/jobs" \
+  | jq '.jobs[] as $job | $job.steps[] | {job: $job.name, name, conclusion}'
+```
+This endpoint is paginated and returns 30 jobs by default. For runs within that first page, each job includes its step list with a name and conclusion per step. The jq filter keeps the job name while flattening those steps into a line-by-line report:
+```
+{ "job": "checks", "name": "Set up job", "conclusion": "success" }
+{ "job": "checks", "name": "Read the readme", "conclusion": "failure" }
+{ "job": "checks", "name": "Show the Python version", "conclusion": "skipped" }
+```
