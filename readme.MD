@@ -467,4 +467,35 @@ There are several contexts. The three you will meet first:
 
 Property syntax commonly reads a context value as context.field, for example github.sha or runner.os. Index syntax such as github['sha'] also works, and functions can receive a whole context object, as in toJSON(github).
 
+### The github context
+In this lesson you will learn the fields of the github context you will use in almost every real workflow.
 
+The github context describes the event that started the run. When a push triggers a workflow, GitHub fills the context with the branch, the commit, and the person who pushed. These are the fields worth memorizing:
+
+- github.repository - owner and repository name, like priya/actions-journey.
+- github.ref - the full reference that was pushed, like refs/heads/main.
+- github.ref_name - just the short branch name, like main.
+- github.sha - the full commit id the run is building.
+- github.event_name - the event that started the run, like push.
+- github.actor - the username that triggered the run.
+
+### Reading them in a step
+A step can print any of these:
+```
+steps:
+  - name: Describe this run
+    run: |
+      echo "Repository: ${{ github.repository }}"
+      echo "Branch: ${{ github.ref_name }}"
+      echo "Commit: ${{ github.sha }}"
+      echo "Event: ${{ github.event_name }}"
+      echo "Triggered by: ${{ github.actor }}"\
+```
+
+Push this, open the run log, and every line shows a real value. The same workflow file prints different values on every push, because the context changes with each run.
+
+### The runner context
+The runner context works the same way but describes the machine, not the event. The two common fields:
+
+runner.os - the operating system, like Linux.
+runner.arch - the processor type, like X64.
