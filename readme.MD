@@ -618,12 +618,28 @@ There is no value field in the response. This is a deliberate design: if a token
 
 The simple rule: configuration goes in variables, anything you would not paste in a chat message goes in secrets.
 
-### Create a secret in the browser
-#### Task
-Task: create the APP_TOKEN secret
-Create a repository secret on your actions-journey repository. The browser is the usual route, because saving a secret means encrypting it against the repository's public key and the page does that for you.
+### Secrets in workflows and log masking
+In this lesson you will learn how a workflow reads a secret and how GitHub keeps it out of the logs.
 
-Requirements:
-- In your actions-journey repository on github.com, open the repository settings and find the Secrets and variables section for Actions.
-- Create a repository secret named exactly APP_TOKEN. For the value, invent a fake token string. Do not use a real password or your GitHub token: this secret is only for practice.
-- Back on this VM, list the repository's secrets with a GET request to the secrets endpoint of the GitHub API, the way the first lesson of this topic showed. Confirm the name appears and notice that no value is returned.
+A workflow reads secrets through the secrets context. The safe pattern is to hand the value to a step as an environment variable:
+```
+steps:
+  - name: Call the API
+    env:
+      APP_TOKEN: ${{ secrets.APP_TOKEN }}
+    run: |
+      if [ -n "$APP_TOKEN" ]; then
+        echo "token is available to this step"
+      fi
+```
+
+The step's shell sees $APP_TOKEN like any environment variable, but the value never appears in the workflow file. Keep the underscore: APP_TOKEN is the exact variable name.
+
+#### Masking
+Run logs are visible to everyone who can see the repository, so a secret printed in a log would be a leak. GitHub defends against accidents with masking: whenever a known secret value appears in log output, it is replaced with *** before the log is stored.
+
+Masking is a safety net, not permission. Never write a step that echoes a secret on purpose. Masking only matches the exact value: a secret that gets transformed first - encoded or split in half, for example - can slip through unmasked. Writing the unchanged value to a file does not itself defeat masking if another step later prints that exact known value.
+
+Two habits keep you safe:
+- Pass secrets to commands through env, never paste them into run lines or commit them in any file.
+- Treat any secret that ever appeared in output, even masked, as worth rotating if you are unsure.
