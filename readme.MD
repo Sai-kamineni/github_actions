@@ -1138,3 +1138,15 @@ on:
       NOTIFY_TOKEN:
         required: true
 ```
+And the caller must hand them over:
+```
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+    secrets:
+      NOTIFY_TOKEN: ${{ secrets.NOTIFY_TOKEN }}
+```
+There is a shortcut, secrets: inherit, which passes every secret the caller can see. It is convenient inside one repository, but listing secrets by name documents exactly what the shared workflow touches, so this course uses explicit names.
+
+One boundary to remember: a reusable workflow replaces a whole job. You cannot call one from inside a step. When you want a shareable block of steps, you need a different tool, and that is the next topic.
+
