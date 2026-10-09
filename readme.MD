@@ -1010,3 +1010,49 @@ python3 -m pytest
 ```
 Five tests, well under a second. That exact pair of commands is what your CI pipeline will run on every push: install what requirements.txt names, then run pytest. If any test fails, the run goes red.
 
+### A CI workflow for Python
+In this lesson you will learn the standard shape of a Python CI workflow: pick a Python version, install dependencies with caching, run the tests.
+
+A CI job for notekeeper has to do on the runner exactly what a developer does locally: install pytest, run pytest. Two pieces are new.
+
+#### setup-python
+Runners come with some Python preinstalled, but serious pipelines pin the version so a runner image update cannot silently change behavior. actions/setup-python does that, and it has caching built in:
+```
+- name: Set up Python
+  uses: actions/setup-python@v5
+  with:
+    python-version: "3.12"
+    cache: pip
+```
+ 
+The cache: pip input is the pattern from the caching topic, packaged: it caches pip's download folder with a key built from hashing requirements.txt. One line instead of a whole actions/cache step.
+
+#### Trigger on push and pull_request
+CI for an application should also run when someone opens a pull request, so broken changes are caught before merge:
+```
+on: [push, pull_request]
+```
+
+#### The whole job
+```
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: python3 -m pytest
+```
+
+Read it as a sentence: get the code, get Python, get the dependencies, prove the code works. Nearly every Python CI pipeline you will meet is this sequence with extras bolted on.
+
+## 19.Reusable workflows
