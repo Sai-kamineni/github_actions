@@ -1377,3 +1377,43 @@ The rule is simple: never check out or execute pull request code inside a pull_r
 
 #### The same pattern on self-hosted runners
 You met the second version of this pattern in the self-hosted runner topic, and it is worth repeating. A self-hosted runner attached to a public repository executes workflow code from anyone who opens a pull request, on a machine you own, inside your network. Same mistake, different door: untrusted code plus a trusted place to run it. Self-hosted runners belong on private repositories only.
+
+## 23.Good habits
+### Names and timeouts
+In this lesson you will learn two small settings that make workflows easier to live with: clear names and job timeouts.
+
+#### Names people can read
+Six months from now, someone will open the Actions tab of your repository and see a list of workflow runs. What they see there is the name: you chose, at three levels:
+
+- The workflow name: labels the whole file in the Actions tab. Without it, GitHub shows the file path.
+- The job name labels each box in the run view. A job id like build-and-test reads fine; you can also add a name: field under the job for a friendlier label.
+- The step name: labels each line of the log.
+
+A run that fails in "Run tests" of job "backend tests" in workflow "ci" tells its own story. A failure in step 3 of job job1 in untitled.yml tells nothing.
+
+#### timeout-minutes
+By default a job may run for up to 6 hours before GitHub kills it. A hung test or a step waiting forever on a download will happily burn those hours, and on a paid plan that is real money. The timeout-minutes: field on a job caps it:
+```
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: echo "must finish within 10 minutes"
+```
+
+Pick a number a little above the job's normal duration. If the job usually takes 3 minutes, a 10 minute cap never bothers a healthy run and stops a stuck one 5 hours and 50 minutes early. When the cap triggers, the job fails with a clear timeout message, which is itself a useful signal that something hung.
+
+### Concurrency groups
+In this lesson you will learn how a concurrency group stops an old run when a newer one starts.
+
+Push three commits in one minute and you get three runs, all testing different versions of the code. Only the last one matters - the other two burn minutes producing results nobody will read. Worse, if the workflow deploys, two runs deploying at the same time can overwrite each other in either order.
+
+#### The concurrency block
+A top-level concurrency: block puts runs into a named group. Within one group, GitHub allows at most one running and one pending run at a time:
+```
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+```
+
