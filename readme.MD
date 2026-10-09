@@ -1289,7 +1289,11 @@ Two flags do the work in config.sh: --url names the repository the runner belong
 
 #### Two adjustments for this VM
 First, you are logged in as root here, and the runner refuses to configure as root unless you allow it. Export this before running config.sh and run.sh:
+
 `export RUNNER_ALLOW_RUNASROOT=1`
+
 Second, ./run.sh stays in the foreground and occupies your terminal. To keep the runner alive in the background, start it with nohup:
+
 `nohup ./run.sh > /root/actions-runner/runner.log 2>&1 &`
+
 A note on resources: runner usage depends on every command and service in the job. Check the workflow's measured CPU, memory, disk, and concurrency needs before deciding whether this VM is large enough.
