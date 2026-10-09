@@ -326,3 +326,23 @@ steps:
 Order matters, as you learned in the previous topic: checkout must come before any step that reads repository files. That is why almost every workflow you will ever read has checkout as its first step.
 
 One useful flip side: if a job never touches the repository files, for example it only calls an external API, it does not need checkout at all.
+
+## 7.How this VM talks to GitHub
+In this lesson you will learn what a personal access token is and how this machine will use it for everything that touches GitHub.
+
+Everything you built so far lived on this VM. From this topic on, your workflows run on GitHub's servers, inside your own GitHub account. That means this machine needs a way to prove to GitHub that it is you.
+
+You will need a GitHub account. If you do not have one, create a free account at github.com before the next lesson.
+
+### Passwords do not work here
+GitHub does not accept your account password from tools like git or curl. Instead it uses personal access tokens. A token is a long random string that you generate in your GitHub settings. It acts like a password with two extra properties:
+
+Scopes. A token only has the permissions you grant it. Ours will get repo (read and write your repositories) and workflow (update workflow files). Nothing more.
+Revocable. If a token leaks, you delete that one token. Your account and other tokens stay safe.
+
+#### One token, three uses
+You will store the token in one file on this VM, and everything reads it from there:
+
+The checks in this skill grade real state on GitHub. When a task says "the workflow ran successfully", the check calls the GitHub API with your token and looks at the actual run. There is nothing to paste and nothing to self-report.
+
+Treat the token like a password. Never commit it to a repository and never paste it into a workflow file. You will store it in one file with tight permissions, and that is the only place it lives.
