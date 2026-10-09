@@ -297,3 +297,29 @@ This example uses an action stored in a GitHub repository. Its uses: value has t
 - owner: the GitHub account that publishes the action. The actions account belongs to GitHub itself.
 - repository: the action's repo name.
 - ref: a tag, branch, or commit SHA after the @ sign. Here, v4 is a tag.
+When the job reaches this step, the runner downloads that repository at that ref and executes the code inside it. You write one line; the action's authors wrote and maintain the rest.
+
+Actions can also live in the same repository through a local path, or come from a Docker image. Those forms use different uses: addresses; owner/repository@ref names a remote repository action.
+
+#### The marketplace
+Published actions are listed in the GitHub Marketplace at github.com/marketplace. There are actions for checking out code, setting up language toolchains, sending Slack messages, publishing releases, and much more. Before writing a long run script for a common task, it is normal to check whether a well maintained action already does it.
+
+Anyone can publish an action, so the owner matters. Actions under the actions owner are maintained by GitHub and are the safe default for the basics.
+
+### actions/checkout and the empty runner
+In this lesson you will learn why runners start with no code on them, and how actions/checkout fixes that.
+
+Here is a mistake every beginner makes once. The pixelpost team writes a workflow with one step, run: cat README.md, and it fails: no such file or directory. The repository clearly has a README. So where did it go?
+
+Nowhere. It was never there. The runner is a fresh virtual machine created just for this job. It has an operating system and common tools installed, but not a single byte of your repository. GitHub triggers the workflow because of your push, but it does not copy the code onto the runner for you.
+
+#### The fix is one uses step
+The actions/checkout action clones your repository into the runner's workspace. It reads the event that triggered the run, so it checks out exactly the commit that was pushed:
+```
+steps:
+  - name: Get the code
+    uses: actions/checkout@v4
+  - name: Read the readme
+    run: cat README.md
+```
+
