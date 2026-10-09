@@ -618,3 +618,12 @@ There is no value field in the response. This is a deliberate design: if a token
 
 The simple rule: configuration goes in variables, anything you would not paste in a chat message goes in secrets.
 
+### Create a secret in the browser
+#### Task
+Task: create the APP_TOKEN secret
+Create a repository secret on your actions-journey repository. The browser is the usual route, because saving a secret means encrypting it against the repository's public key and the page does that for you.
+
+Requirements:
+- In your actions-journey repository on github.com, open the repository settings and find the Secrets and variables section for Actions.
+- Create a repository secret named exactly APP_TOKEN. For the value, invent a fake token string. Do not use a real password or your GitHub token: this secret is only for practice.
+- Back on this VM, list the repository's secrets with a GET request to the secrets endpoint of the GitHub API, the way the first lesson of this topic showed. Confirm the name appears and notice that no value is returned.
