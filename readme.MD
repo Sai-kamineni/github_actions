@@ -1150,3 +1150,30 @@ There is a shortcut, secrets: inherit, which passes every secret the caller can 
 
 One boundary to remember: a reusable workflow replaces a whole job. You cannot call one from inside a step. When you want a shareable block of steps, you need a different tool, and that is the next topic.
 
+## 19.Composite actions
+In this lesson you will learn what a composite action is, the action.yml file that defines one, and how a workflow in the same repository uses it.
+
+Since the using-actions topic, you have used actions written by other people, like actions/checkout. A composite action is an action you write yourself. It bundles a group of steps under one name, so any job can run the whole group with a single uses: line.
+
+The pixelpost pipelines all start their logs the same way: print the branch, print the commit, print the runner's Python version. Three echo steps, copied into every job. That is a job for a composite action.
+
+#### The action.yml file
+Every action is a folder containing a file named action.yml. For a local action, the folder lives inside your repository, by convention under .github/actions/:
+```
+name: build-info
+description: Print branch, commit, and Python version
+runs:
+  using: composite
+  steps:
+    - run: echo "Branch $GITHUB_REF_NAME"
+      shell: bash
+    - run: echo "Commit $GITHUB_SHA"
+      shell: bash
+    - run: python3 --version
+      shell: bash
+```
+Three parts to notice:
+
+- runs: using: composite - this is what makes it a composite action, a list of steps rather than a program.
+- The steps look like workflow steps, with one extra rule: every run: step must declare shell:. In a workflow the runner picks a default shell; inside an action you must say it.
+- Actions can declare inputs: too, a later lesson in this topic covers that.
