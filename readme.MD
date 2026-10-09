@@ -174,3 +174,28 @@ The list form triggers on either event. The map form does the same, and leaves r
 #### Why teams use both
 For pixelpost, push guards the main branch: every change that lands is tested. pull_request tests a change before it lands, so the reviewer sees a green tick next to the code they are reviewing. Most CI workflows you meet in real repositories listen to both.
 
+### Branch and path filters
+Without filters, on: push fires for every push to every branch. On a busy repository that wastes runner minutes and buries the results that matter. Filters narrow the trigger.
+
+#### branches: react to some branches only
+Filters live under the event in the map form of on:
+```
+on:
+  push:
+    branches: [main]
+```
+
+Now the workflow runs only when commits reach main. Pushes to any other branch are ignored. The list can hold several branches, and patterns work too: releases/* matches releases/v1, releases/v2, and so on.
+
+#### paths: react when certain files change
+```
+on:
+  push:
+    paths: ["docs/**"]
+```
+
+This fires only when the push changes at least one file under docs/. The pattern ** matches any number of folder levels. Teams use this to keep a slow test suite from running when someone only fixed a typo in the documentation, or the other way around, to rebuild the docs site only when docs change.
+
+Filters combine. Both must match for the workflow to run:
+
+One YAML detail: a pattern like docs/** starts with a plain letter, but patterns beginning with * must be quoted, because * is a YAML syntax character. Quoting every pattern is a safe habit.
