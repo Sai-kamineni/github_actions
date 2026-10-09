@@ -960,3 +960,31 @@ A cache saves a folder at the end of one run and restores it at the start of the
 - path is the folder to save and restore. For pip that is ~/.cache/pip, where pip keeps downloaded packages.
 - key is the label the saved folder is stored under. A run that asks for the same key gets the same folder back.
 
+The step does both directions. At its position in the job it restores the folder if the key exists (a cache hit). If not (a cache miss), the job continues with nothing, and at the end of a successful job the folder is saved under that key.
+
+#### Cache is not an artifact
+The two features store files but solve different problems. An artifact is an output you want to keep and download: a package, a report. A cache is a speed-up you could throw away at any time: if GitHub deleted every cache tonight, your workflows would still pass, just slower. GitHub does exactly that to caches not used for 7 days.
+
+### Cache keys and restore-keys
+In this lesson you will learn how to build a cache key that changes when it should, and how restore-keys give you a partial hit instead of a miss.
+
+A fixed key like pip-v1 has a problem: it never changes. Add a new package to requirements.txt and the workflow keeps restoring the old folder, then saves nothing new, because the key already exists. The cache is stale forever.
+
+The fix is to build the key from the file that defines your dependencies:
+```
+- name: Cache pip downloads
+  uses: actions/cache@v4
+  with:
+    path: ~/.cache/pip
+    key: pip-${{ hashFiles('requirements.txt') }}
+    restore-keys: |
+      pip-
+```
+
+hashFiles is an expression function that computes a checksum of the named file. Same file contents, same key, cache hit. Edit requirements.txt and the checksum changes, so the key is new and the old cache no longer matches.
+
+#### restore-keys: a useful second choice
+A new key means a miss, and a miss means downloading everything again - even though only one package changed. restore-keys is a list of prefixes to try when the exact key misses. pip- matches the most recent cache whose key starts with pip-, so the job starts with yesterday's folder, downloads only the one new package, and saves the result under the new exact key.
+
+One warning: after a restore-keys match, the job runs with an older folder than the key describes. For a pip download cache that is harmless, pip checks versions anyway. For folders where stale files can poison the result (like some build outputs), an exact key with no restore-keys is the safer choice.
+
