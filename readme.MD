@@ -142,3 +142,25 @@ jobs:
 EOF
 ```
 `actionlint /root/demo/.github/workflows/ci.yml`
+
+If the file is clean, actionlint prints nothing and exits quietly. That silence means success. If something is wrong, it prints the file name, the line number, and a message:
+
+`ci.yml:5:5: "run-on" section is not allowed. did you mean "runs-on"?`
+
+## 4.push and pull_request events
+In this lesson you will learn the two events that trigger most CI workflows: push and pull_request.
+
+The on key you wrote in the last topic held one bare word. It can also hold a list, or a map with settings per event. All three forms are common:
+```
+on: push
+```
+```
+on: [push, pull_request]
+```
+```
+on:
+  push:
+  pull_request:
+```
+
+The list form triggers on either event. The map form does the same, and leaves room for filters under each event - that is the next lesson.
