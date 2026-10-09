@@ -1217,3 +1217,15 @@ Two details differ from reusable workflow inputs:
 - There is no type: field. Every action input is a string.
 - An input can be required, carry a default, or be optional with no default. An omitted optional input can therefore be empty.
 - Steps read inputs through the same inputs context you used in reusable workflows: ${{ inputs.app-name }}.
+
+#### Passing values from the workflow
+The calling step uses with:, exactly like the inputs you have passed to actions/checkout and other published actions:
+```
+steps:
+  - uses: actions/checkout@v4
+  - uses: ./.github/actions/announce
+    with:
+      app-name: pixelpost
+```
+
+Here environment is omitted, so the default staging is used. Leaving out a required input is an error - the job fails as soon as the action starts.
