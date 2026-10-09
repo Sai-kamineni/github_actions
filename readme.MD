@@ -1177,3 +1177,16 @@ Three parts to notice:
 - runs: using: composite - this is what makes it a composite action, a list of steps rather than a program.
 - The steps look like workflow steps, with one extra rule: every run: step must declare shell:. In a workflow the runner picks a default shell; inside an action you must say it.
 - Actions can declare inputs: too, a later lesson in this topic covers that.
+
+### Using it from a workflow
+A job in the same repository points uses: at the folder (not at the action.yml file itself):
+```
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-info
+```
+
+The checkout step is not decoration. A local action is read from the job's copy of the repository, and the runner starts empty. Without checkout first, the folder does not exist on the runner and the job fails.
