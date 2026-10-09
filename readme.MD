@@ -988,3 +988,25 @@ A new key means a miss, and a miss means downloading everything again - even tho
 
 One warning: after a restore-keys match, the job runs with an older folder than the key describes. For a pip download cache that is harmless, pip checks versions anyway. For folders where stale files can poison the result (like some build outputs), an exact key with no restore-keys is the safer choice.
 
+## 18.CI for a real application
+### Meet the notekeeper application
+In this lesson you will meet the application this topic builds a CI pipeline for. You will not write any application code - just get oriented.
+
+So far your workflows echoed text and installed packages. Real CI protects a real codebase. For that, this topic uses notekeeper, a small notes tool written in Python. It stores notes in a JSON file and supports adding, listing, searching, and deleting them.
+
+#### The files
+The app lands in /root/actions-pipelines in the next task. It has four files:
+
+- notes.py - the whole application: load and save the JSON file, plus one function per command.
+- test_notes.py - five pytest tests covering adding, deleting, and searching notes.
+- requirements.txt - one pinned dependency, pytest. The app itself uses only the Python standard library.
+- README.md - usage and how to run the tests.
+
+### How the tests run
+pytest discovers test_notes.py automatically and calls the functions in notes.py directly. Locally, a developer runs:
+```
+python3 -m pip install -r requirements.txt
+python3 -m pytest
+```
+Five tests, well under a second. That exact pair of commands is what your CI pipeline will run on every push: install what requirements.txt names, then run pytest. If any test fails, the run goes red.
+
