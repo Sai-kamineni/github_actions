@@ -346,3 +346,18 @@ You will store the token in one file on this VM, and everything reads it from th
 The checks in this skill grade real state on GitHub. When a task says "the workflow ran successfully", the check calls the GitHub API with your token and looks at the actual run. There is nothing to paste and nothing to self-report.
 
 Treat the token like a password. Never commit it to a repository and never paste it into a workflow file. You will store it in one file with tight permissions, and that is the only place it lives.
+
+## 8.Your first workflow
+### From push to run
+In this lesson you will learn what happens between pushing a workflow file and seeing it run on GitHub.
+
+So far you wrote workflow files on this VM and checked them with actionlint. Nothing executed. That is because a workflow file is only instructions. Something has to read those instructions and act on them, and that something lives on GitHub's side.
+
+#### The chain of events
+When you push a commit to GitHub, this happens:
+
+- GitHub receives the push and looks in .github/workflows/ on the pushed branch.
+- For every workflow file whose on: section matches the event (a push, in this case), GitHub creates a run.
+- Each job in the run is handed to a runner. A GitHub-hosted runner uses a fresh virtual machine for this job.
+- The runner executes the steps in order and streams logs back. GitHub discards a GitHub-hosted runner after the job ends; self-hosted runners can persist.
+
