@@ -848,3 +848,25 @@ strategy:
 ```
 
 The grid expands to four, then the matching combination is removed, leaving three jobs.
+
+#### include: add combinations
+```
+strategy:
+  matrix:
+    python-version: ["3.11", "3.12"]
+    include:
+      - python-version: "3.13"
+```
+
+include bolts extra jobs onto the grid. It can also add an extra key to an existing combination, for example giving just one cell an environment flag.
+
+#### fail-fast
+By default, fail-fast is true: the moment one matrix job fails, GitHub cancels all the still-running sisters. That saves minutes, but it hides information - you learn that 3.10 is broken and nothing about 3.11 and 3.12. Turn it off to let every cell finish:
+```
+strategy:
+  fail-fast: false
+  matrix:
+    python-version: ["3.10", "3.11", "3.12"]
+```
+
+Whether the default is right depends on why the matrix exists, and you will weigh exactly that trade in the scenario after the next task.
