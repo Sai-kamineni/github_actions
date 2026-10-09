@@ -53,10 +53,10 @@ In this lesson you will learn which parts of GitHub Actions live inside your rep
 
 This split matters because it tells you what you control with a git commit and what GitHub handles automatically.
 
-##### Your side: the repository
+#### Your side: the repository
 Workflow definitions live in your repository. They sit in a fixed folder, .github/workflows/, at the root. Repositories can also contain local actions, action metadata, scripts, Dockerfiles, and project files used by those workflows. All are normal files, committed and versioned like other code.
 
 That is the whole point. When the pixelpost team writes their release steps into a workflow file, the process stops living in one person's memory. It is in the repository, reviewed like code, and every teammate gets the same steps.
 
-##### GitHub's side: everything else
+#### GitHub's side: everything else
 GitHub watches your repository for events. When an event matches a workflow, GitHub reads the file, creates the jobs, finds an eligible runner, and starts the job. A GitHub-hosted runner is a fresh virtual machine GitHub prepares for one job and discards afterwards. Self-hosted runners are installed and maintained by their owners and can persist between jobs.
