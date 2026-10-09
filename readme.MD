@@ -1229,3 +1229,17 @@ steps:
 ```
 
 Here environment is omitted, so the default staging is used. Leaving out a required input is an error - the job fails as soon as the action starts.
+
+### Composite action vs reusable workflow
+In this lesson you will learn when to reach for a composite action and when a reusable workflow is the right tool.
+
+Both exist to remove copied YAML, so they are easy to confuse. The difference is the size of the piece they replace.
+
+- A reusable workflow replaces a whole job. The caller writes uses: at the job level, and the called workflow brings its own jobs and its own runs-on:.
+- A composite action replaces a group of steps. The caller writes uses: at the step level, inside a job it already owns, and the steps run on that job's runner.
+
+That one difference decides everything else:
+
+- A composite action shares the job's runner, workspace, and environment. Files created by earlier steps are right there. A reusable workflow starts separate jobs with separate job workspaces. Do not rely on shared files, even if self-hosted jobs happen to use the same physical runner; pass data through defined inputs, outputs, artifacts, or secrets. Some caller context and the automatic GitHub token remain available by design.
+- A reusable workflow can contain several jobs, a matrix, and needs: chains. A composite action is only ever a flat list of steps.
+- A caller can pass declared secrets to a reusable workflow or use secrets: inherit where GitHub permits it. Environment secrets in the called job and the automatic GitHub token follow their own rules. A composite action has no secrets section - the calling workflow usually hands a needed secret in as an input or an environment variable.
