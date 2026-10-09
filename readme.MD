@@ -251,3 +251,25 @@ A job executes its steps one at a time, in the order they appear in the file. St
 
 Order matters because the steps share one machine. Whatever step 1 leaves on disk, step 2 can read. That is the whole reason a job exists: it is a group of steps that need each other's results on the same machine.
 
+### Multi-line run, shell, and working-directory
+In this lesson you will learn how to put several commands in one step, how to choose the shell, and how to change the folder a step runs in.
+
+#### Several commands in one run step
+A single command fits after run: on the same line. For several commands, put a pipe character after run: and indent each command on its own line:
+```
+- name: Prepare the report folder
+  run: |
+    mkdir -p report
+    date > report/generated-at.txt
+    echo "report folder ready"
+```
+
+#### Choosing the shell
+On a Linux runner the commands run in bash by default. The shell: key makes the choice explicit, or switches to another shell:
+```
+- name: Run with bash
+  shell: bash
+  run: echo "running in $0"
+```
+
+You rarely need shell: on Linux, but you will see it often in real workflows, especially ones that also run on Windows, where the default is PowerShell instead.
