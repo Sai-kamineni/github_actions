@@ -282,3 +282,18 @@ Every run step starts in the root of the workspace. If the commands belong in a 
   run: ls
 ```
 This keeps the run script about the work, not about navigation, and it only affects that one step.
+
+## 6.What is an action
+In this lesson you will learn what an action is and how the uses: line names one.
+
+The pixelpost team needs their workflow to download the code, install Python, and later upload a build result. None of that is special to pixelpost. Thousands of teams need the exact same steps, so people packaged them as reusable units called actions. A uses step pulls one in:
+``
+- name: Get the code
+  uses: actions/checkout@v4
+```
+
+This example uses an action stored in a GitHub repository. Its uses: value has three parts:
+
+- owner: the GitHub account that publishes the action. The actions account belongs to GitHub itself.
+- repository: the action's repo name.
+- ref: a tag, branch, or commit SHA after the @ sign. Here, v4 is a tag.
