@@ -513,3 +513,48 @@ Both answer a yes or no question about a value:
 ${{ contains(github.event.head_commit.message, 'urgent') }}
 ${{ startsWith(github.ref, 'refs/heads/release') }}
 ```
+- contains(a, b) is true when b appears anywhere inside a. The example above is true when the commit message has the word urgent in it.
+- startsWith(a, b) is true when a begins with b. The example is true for any branch whose name starts with release.
+
+Both are case-insensitive. Their real power appears in a later topic, where a job can be skipped unless an expression is true. For now you can print their result to see how they behave.
+
+### format
+format builds one string from a template and values. The template uses {0}, {1}, and so on as slots:
+```
+${{ format('build {0} of {1}', github.run_number, github.ref_name) }}
+```
+
+On the fifth push to main this produces build 5 of main. github.run_number is a counter GitHub increases by one for every run of a workflow, which makes it useful for labels and version strings.
+
+Teams use format to build release names, image tags, and messages that carry the run's identity.
+
+## 11.Variables and env
+
+In this lesson you will learn how to set environment variables in a workflow and what happens when the same variable is set at more than one level.
+
+Steps run shell commands, and shell commands read environment variables. A workflow can define those variables with an env block. The block can sit at three levels:
+```
+name: env-demo
+on: push
+env:
+  APP_NAME: journey        # workflow level: every job sees it
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      LOG_LEVEL: info      # job level: every step in this job
+    steps:
+      - name: Verbose step
+        env:
+          LOG_LEVEL: debug # step level: this step only
+        run: echo "$APP_NAME with log level $LOG_LEVEL"
+```
+Inside run commands you read them like any shell variable, with $APP_NAME. No ${{ }} needed - the runner exports them before the shell starts. Variable names stay exact: APP_NAME and LOG_LEVEL include their underscores.
+
+#### Precedence: the closest level wins
+When the same name is set at more than one level, the most specific one wins. Step beats job, job beats workflow.
+
+In the example, the verbose step prints journey with log level debug. Every other step in the job would print info, because only this step overrides it.
+
+This pattern is everywhere in real pipelines: sensible defaults at the workflow level, one job that needs something different, one step that needs even more detail.
+
