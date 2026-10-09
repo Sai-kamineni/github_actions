@@ -499,3 +499,17 @@ The runner context works the same way but describes the machine, not the event. 
 
 runner.os - the operating system, like Linux.
 runner.arch - the processor type, like X64.
+
+These matter later, when one workflow runs on several operating systems and a step needs to know which machine it landed on.
+
+### Expression functions
+In this lesson you will learn three functions you can call inside ${{ }} expressions: contains, startsWith, and format.
+
+Expressions can do more than read a single value. GitHub gives you a small set of built-in functions to test and combine values before a step sees them.
+
+#### contains and startsWith
+Both answer a yes or no question about a value:
+```
+${{ contains(github.event.head_commit.message, 'urgent') }}
+${{ startsWith(github.ref, 'refs/heads/release') }}
+```
