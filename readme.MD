@@ -60,3 +60,19 @@ That is the whole point. When the pixelpost team writes their release steps into
 
 #### GitHub's side: everything else
 GitHub watches your repository for events. When an event matches a workflow, GitHub reads the file, creates the jobs, finds an eligible runner, and starts the job. A GitHub-hosted runner is a fresh virtual machine GitHub prepares for one job and discards afterwards. Self-hosted runners are installed and maintained by their owners and can persist between jobs.
+
+In this course, GitHub-hosted runners remove the need to maintain a build server. Your workflow can still install its dependencies, and self-hosted runners require their own setup and cleanup. GitHub reports the result on the repository page as a green tick or a red cross.
+
+#### How Actions runs a CI/CD pipeline
+In this lesson you will learn how the five building blocks turn into the CI/CD pipeline you saw in topic 01.
+
+Remember the CI loop: someone pushes, a machine gets the code, installs dependencies, runs the checks, and reports green or red within minutes. GitHub Actions is one tool that runs that loop. Here is the same loop, labelled with Actions vocabulary:
+
+Every box from topic 01 has an Actions name now. The trigger is an event. The written-down steps are a workflow. The machine is a runner.
+
+#### And the CD part?
+`CD fits the same shape. A deploy is just another job with different steps: instead of "run tests", the steps are "package the app" and "copy it to the server".` Continuous delivery and continuous deployment differ only in the event and in whether a human approves the job. Actions supports both, and you will build both later in this skill.
+
+#### Actions is not the only tool
+Jenkins, GitLab CI, and CircleCI do the same work. GitHub Actions stands out because it is built into GitHub: no extra server, no separate account, and workflow files live next to the code they test. Since most teams already keep code on GitHub, it is often the shortest path to a working pipeline.
+
